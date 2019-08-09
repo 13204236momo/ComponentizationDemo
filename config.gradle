@@ -1,0 +1,33 @@
+//添加多个自定义属性，可以通过ext代码块
+ext{
+    // 生产/开发环境（正式/测试）
+    isRelease = true
+
+    // 建立map存储，对象名，key都可以自定义
+    androidId = [
+            compileSdkVersion : 29,
+            buildToolsVersion: "29.0.1",
+            minSdkVersion: 21,
+            targetSdkVersion: 29,
+            versionCode: 1,
+            versionName: "1.0"
+    ]
+    appId = [
+            app: "com.example.componentizationdemo",
+            common: "com.example.common"
+    ]
+
+    // 生产/开发环境的服务器地址
+    url = [
+            debug:"",
+            release:""
+    ]
+
+    //第三方库
+    supportLibrary ="29.0.0"
+    dependencies = [
+            "appcompat":"com.android.support:appcompat-v7:${supportLibrary}",
+            "recyclerview":"com.android.support:recyclerview-v7:${supportLibrary}",
+            "constraintlayout":"androidx.constraintlayout:constraintlayout:1.1.3"
+    ]
+}
