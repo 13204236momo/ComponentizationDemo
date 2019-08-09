@@ -1,7 +1,7 @@
 //添加多个自定义属性，可以通过ext代码块
 ext{
     // 生产/开发环境（正式/测试）
-    isRelease = true
+    isRelease = false
 
     // 建立map存储，对象名，key都可以自定义
     androidId = [
@@ -14,6 +14,8 @@ ext{
     ]
     appId = [
             app: "com.example.componentizationdemo",
+            order: "com.example.componentizationdemo.order",
+            personal: "com.example.componentizationdemo.personal",
             common: "com.example.common"
     ]
 

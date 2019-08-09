@@ -116,4 +116,10 @@ dependencies {
 
     //最简洁的引入方式
     support.each{ k, v-> implementation v}
+
+    implementation project(':common')
+    if (isRelease){
+        implementation project(':order')
+        implementation project(':personal')
+    }
 }
