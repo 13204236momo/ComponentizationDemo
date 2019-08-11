@@ -1,4 +1,4 @@
- apply plugin: 'com.android.library'
+apply plugin: 'com.android.library'
 
 //赋值与引用
 def androidId = rootProject.ext.androidId
@@ -27,10 +27,6 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     //最简洁的引入方式
     support.each{ k, v-> implementation v}
-
-
-    // 每个功能子模块既然都要生成APT源文件，而且又是所有模块依赖的公共库
-    // 那么公共基础库依赖路由arouter_api就能向每个子模块提供开放api了
-    api project(':arouter_api') // 路由对外开放api模块
-
+    //引入annotation ，让注解处理器处理注解
+    implementation project(":annotation")
 }
