@@ -3,6 +3,9 @@ ext{
     // 生产/开发环境（正式/测试）
     isRelease = false
 
+    //用于存放APT生成的类文件
+    packageNameForAPT = "com.example.componentizationdemo.apt"
+
     // 建立map存储，对象名，key都可以自定义
     androidId = [
             compileSdkVersion : 29,

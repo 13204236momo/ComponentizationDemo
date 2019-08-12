@@ -25,6 +25,14 @@ android {
         // 为什么需要定义这个？因为src代码中有可能需要用到跨模块交互，如果是组件化模块显然不行
         // 切记：不能在android根节点，只能在defaultConfig或buildTypes节点下
         buildConfigField("boolean", "isRelease", String.valueOf(isRelease))
+
+        //在gradle文件中配置选项参数值（用于APT传参接受）
+        //必须写在defaultConfig节点下
+        javaCompileOptions {
+            annotationProcessorOptions {
+                arguments = [moduleName: project.getName(),packageNameForAPT :packageNameForAPT]
+            }
+        }
     }
 
     buildTypes {

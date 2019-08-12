@@ -1,4 +1,4 @@
-package com.example.componentizationdemo.api;
+package com.example.componentizationdemo.api.core;
 
 import com.example.componentizationdemo.annotation.model.RouterBean;
 
