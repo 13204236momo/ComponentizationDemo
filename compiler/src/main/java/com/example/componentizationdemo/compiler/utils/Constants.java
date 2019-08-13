@@ -20,8 +20,18 @@ public class Constants {
     public static final String AROUTE_Path = BASE_PACKAGE + ".core.ARouterLoadPath";
     //路由组Group对应得详细Path,方法名
     public static final String PATH_METHOD_NAME = "loadPath";
+    // 路由组Group，方法名
+    public static final String GROUP_METHOD_NAME = "loadGroup";
+
+    // 路由组Group，参数名
+    public static final String GROUP_PARAMETER_NAME = "groupMap";
+
     //路由组Group对应得详细Path,对象名
     public static final String PATH_PARAMETER_NAME = "pathMap";
     //类文件名
     public static final String PATH_FILE_NAME = "ARouter$$Path$$";
+    // APT生成的路由组Group源文件名
+    public static final String GROUP_FILE_NAME = "ARouter$$Group$$";
+
+
 }
