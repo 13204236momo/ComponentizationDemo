@@ -43,7 +43,7 @@ import javax.tools.Diagnostic;
 
 @AutoService(Processor.class)
 // 允许/支持的注解类型，让注解处理器处理
-@SupportedAnnotationTypes("com.example.componentizationdemo.annotation.ARouter")
+@SupportedAnnotationTypes(Constants.AROUTER_ANNOTATION_TYPES)
 // 指定JDK编译版本
 @SupportedSourceVersion(SourceVersion.RELEASE_7)
 @SupportedOptions({Constants.MODULE, Constants.APT_PACKAGE})
