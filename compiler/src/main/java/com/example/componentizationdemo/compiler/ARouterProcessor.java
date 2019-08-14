@@ -11,6 +11,7 @@ import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.ParameterizedTypeName;
 import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
+import com.squareup.javapoet.WildcardTypeName;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -62,9 +63,13 @@ public class ARouterProcessor extends AbstractProcessor {
     //包名用于存放APT生成的类文件
     private String packageNameForAPT;
 
+
     // 临时map存储，用来存放路由Group信息，生成路由组类文件时遍历
     // key:组名"app", value:类名"ARouter$$Path$$app.class"
-    private Map<String, List<RouterBean>> tempGroupMap = new HashMap<>();
+    private Map<String, List<RouterBean>> tempPathMap = new HashMap<>();
+    // 临时map存储，用来存放路由Group信息，生成路由组类文件时遍历
+    // key:组名"app", value:类名"ARouter$$Path$$app.class"
+    private Map<String, String> tempGroupMap = new HashMap<>();
 
 
     // 该方法主要用于一些初始化的操作，通过该方法的参数ProcessingEnvironment可以获取一些列有用的工具类
@@ -200,7 +205,7 @@ public class ARouterProcessor extends AbstractProcessor {
                     .setElement(element)
                     .build();
 
-            //高级判断，@ARouter注解仅仅只能用在类智商，并且是规定的Activity
+            //高级判断，@ARouter注解仅仅只能用在类之上，并且是规定的Activity
             if (typesUtils.isSubtype(elementMirror, activityMirror)) {
                 bean.setType(RouterBean.Type.ACTIVITY);
             } else {
@@ -227,7 +232,62 @@ public class ARouterProcessor extends AbstractProcessor {
      * @param groupLoadType ARouterLoadGroup接口信息
      * @param pathLoadType  ARouterLoadPath接口信息
      */
-    private void createGroupFile(TypeElement groupLoadType, TypeElement pathLoadType) {
+    private void createGroupFile(TypeElement groupLoadType, TypeElement pathLoadType) throws IOException {
+        // 判断是否有需要生成的类文件
+        if (EmptyUtils.isEmpty(tempGroupMap) || EmptyUtils.isEmpty(tempPathMap)) return;
+
+        TypeName methodReturns = ParameterizedTypeName.get(
+                ClassName.get(Map.class), // Map
+                ClassName.get(String.class), // Map<String,
+                // 第二个参数：Class<? extends ARouterLoadPath>
+                // 某某Class是否属于ARouterLoadPath接口的实现类
+                ParameterizedTypeName.get(ClassName.get(Class.class),
+                        WildcardTypeName.subtypeOf(ClassName.get(pathLoadType)))
+        );
+
+        // 方法配置：public Map<String, Class<? extends ARouterLoadPath>> loadGroup() {
+        MethodSpec.Builder methodBuidler = MethodSpec.methodBuilder(Constants.GROUP_METHOD_NAME) // 方法名
+                .addAnnotation(Override.class) // 重写注解
+                .addModifiers(Modifier.PUBLIC) // public修饰符
+                .returns(methodReturns); // 方法返回值
+
+        // 遍历之前：Map<String, Class<? extends ARouterLoadPath>> groupMap = new HashMap<>();
+        methodBuidler.addStatement("$T<$T, $T> $N = new $T<>()",
+                ClassName.get(Map.class),
+                ClassName.get(String.class),
+                ParameterizedTypeName.get(ClassName.get(Class.class),
+                        WildcardTypeName.subtypeOf(ClassName.get(pathLoadType))),
+                Constants.GROUP_PARAMETER_NAME,
+                HashMap.class);
+
+        // 方法内容配置
+        for (Map.Entry<String, String> entry : tempGroupMap.entrySet()) {
+            // 类似String.format("hello %s net163 %d", "net", 163)通配符
+            // groupMap.put("main", ARouter$$Path$$app.class);
+            methodBuidler.addStatement("$N.put($S, $T.class)",
+                    Constants.GROUP_PARAMETER_NAME, // groupMap.put
+                    entry.getKey(),
+                    // 类文件在指定包名下
+                    ClassName.get(packageNameForAPT, entry.getValue()));
+        }
+
+        // 遍历之后：return groupMap;
+        methodBuidler.addStatement("return $N", Constants.GROUP_PARAMETER_NAME);
+
+        // 最终生成的类文件名
+        String finalClassName = Constants.GROUP_FILE_NAME + moduleName;
+        messager.printMessage(Diagnostic.Kind.NOTE, "APT生成路由组Group类文件：" +
+                packageNameForAPT + "." + finalClassName);
+
+        // 生成类文件：ARouter$$Group$$app
+        JavaFile.builder(packageNameForAPT, // 包名
+                TypeSpec.classBuilder(finalClassName) // 类名
+                        .addSuperinterface(ClassName.get(groupLoadType)) // 实现ARouterLoadGroup接口
+                        .addModifiers(Modifier.PUBLIC) // public修饰符
+                        .addMethod(methodBuidler.build()) // 方法的构建（方法参数 + 方法体）
+                        .build()) // 类构建完成
+                .build() // JavaFile构建完成
+                .writeTo(filer); // 文件生成器开始生成类文件
 
     }
 
@@ -237,14 +297,14 @@ public class ARouterProcessor extends AbstractProcessor {
      * @param pathLoadType ARouterLoadPath接口信息
      */
     private void createPathFile(TypeElement pathLoadType) throws IOException {
-        if (EmptyUtils.isEmpty(tempGroupMap)) return;
+        if (EmptyUtils.isEmpty(tempPathMap)) return;
         //方法的返回值Map<String,RouterBean>
         TypeName methodReturns = ParameterizedTypeName.get(
                 ClassName.get(Map.class),
                 ClassName.get(String.class),
                 ClassName.get(RouterBean.class));
         //遍历分组，每一个分组创建一个路径类文件夹，如：ARouter$$Group$$app
-        for (Map.Entry<String, List<RouterBean>> entry : tempGroupMap.entrySet()) {
+        for (Map.Entry<String, List<RouterBean>> entry : tempPathMap.entrySet()) {
             //方法体构造public Map<String,RouterBean> loadPath(){ }
             MethodSpec.Builder methodBuilder = MethodSpec.methodBuilder(Constants.PATH_METHOD_NAME) //方法名
                     .addAnnotation(Override.class) //重写注解
@@ -290,9 +350,7 @@ public class ARouterProcessor extends AbstractProcessor {
                     .writeTo(filer); // 文件生成器开始生成类文件
 
             // 非常重要一步！！！！！路径文件生成出来了，才能赋值路由组tempGroupMap
-            // tempGroupMap.put(entry.getKey(), finalClassName);
-
-
+             tempGroupMap.put(entry.getKey(), finalClassName);
         }
 
     }
@@ -301,12 +359,12 @@ public class ARouterProcessor extends AbstractProcessor {
         if (checkRouterPath(bean)) {
             messager.printMessage(Diagnostic.Kind.NOTE, "RouterBean>>>" + bean.toString());
             //开始赋值
-            List<RouterBean> routerBeans = tempGroupMap.get(bean.getGroup());
+            List<RouterBean> routerBeans = tempPathMap.get(bean.getGroup());
             //如果map找不到key
             if (EmptyUtils.isEmpty(routerBeans)) {
                 routerBeans = new ArrayList<>();
                 routerBeans.add(bean);
-                tempGroupMap.put(bean.getGroup(), routerBeans);
+                tempPathMap.put(bean.getGroup(), routerBeans);
             } else {
                 routerBeans.add(bean);
             }

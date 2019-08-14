@@ -68,4 +68,7 @@ dependencies {
     support.each { k, v -> implementation v }
 
     implementation project(':common') // 公共基础库
+    implementation project(':annotation')
+    //注解处理器
+    annotationProcessor project(':compiler')
 }

@@ -5,8 +5,10 @@ import android.view.View;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.componentizationdemo.annotation.ARouter;
 
 
+@ARouter(path = "/personal/Personal_MainActivity")
 public class Personal_MainActivity extends AppCompatActivity {
 
     @Override
