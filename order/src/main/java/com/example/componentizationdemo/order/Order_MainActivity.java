@@ -9,6 +9,7 @@ import android.view.View;
 
 import com.example.componentizationdemo.annotation.ARouter;
 import com.example.componentizationdemo.annotation.Parameter;
+import com.example.componentizationdemo.api.core.ARouterManager;
 import com.example.componentizationdemo.api.core.ParameterManager;
 import com.example.componentizationdemo.common.Cons;
 
@@ -32,6 +33,10 @@ public class Order_MainActivity extends AppCompatActivity {
     }
 
     public void jumpPersonal(View view) {
+
+        ARouterManager.getInstance().build("/personal/Personal_MainActivity")
+                .withString("name","kala")
+                .navigation(this);
 
     }
 }
