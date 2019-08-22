@@ -4,41 +4,34 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 
 import com.example.componentizationdemo.annotation.ARouter;
+import com.example.componentizationdemo.annotation.Parameter;
+import com.example.componentizationdemo.api.core.ParameterManager;
+import com.example.componentizationdemo.common.Cons;
 
 
 @ARouter(path = "/order/Order_MainActivity")
 public class Order_MainActivity extends AppCompatActivity {
 
+    @Parameter
+    String name;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.order_activity_main);
+
+        //懒加载方式跳转到哪加载哪个类
+        ParameterManager.getInstance().loadParameter(this);
+        Log.e(Cons.TAG,"接收参数值"+name);
     }
 
     public void jumpApp(View view) {
     }
 
     public void jumpPersonal(View view) {
-//        ARouterLoadGroup group = new ARouter$$Group$$personal();
-//        Map<String, Class<? extends ARouterLoadPath>> map = group.loadGroup();
-//        // 通过order组名获取对应路由路径对象
-//        Class<? extends ARouterLoadPath> clazz = map.get("order");
-//
-//        try {
-//            // 类加载动态加载路由路径对象
-//            ARouter$$Path$$order path = (ARouter$$Path$$order) clazz.newInstance();
-//            Map<String, RouterBean> pathMap = path.loadPath();
-//            // 获取目标对象封装
-//            RouterBean bean = pathMap.get("/order/Order_MainActivity");
-//
-//            if (bean != null) {
-//                startActivity(new Intent(this, bean.getClazz()));
-//            }
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
+
     }
 }

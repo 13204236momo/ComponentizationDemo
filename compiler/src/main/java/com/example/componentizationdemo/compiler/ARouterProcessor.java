@@ -240,7 +240,7 @@ public class ARouterProcessor extends AbstractProcessor {
                 ClassName.get(Map.class), // Map
                 ClassName.get(String.class), // Map<String,
                 // 第二个参数：Class<? extends ARouterLoadPath>
-                // 某某Class是否属于ARouterLoadPath接口的实现类
+                // 某某Class是否属于ARouterLoad Path接口的实现类
                 ParameterizedTypeName.get(ClassName.get(Class.class),
                         WildcardTypeName.subtypeOf(ClassName.get(pathLoadType)))
         );

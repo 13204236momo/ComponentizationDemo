@@ -7,10 +7,10 @@ def appId = rootProject.ext.appId
 
 android {
     signingConfigs {
-        //默认的debug签名信息，通过数据线安装就是痛的这个
+        //默认的debug签名信息，通过数据线安装就是用的这个
         debug {
-            storeFile file('/Users/zhoumohan/.android/debug.keystore')
-            //storeFile file('C:\\Users\\zhoumohan\\.android\\debug.keystore')
+            //storeFile file('/Users/zhoumohan/.android/debug.keystore')
+            storeFile file('C:\\Users\\zhoumohan\\.android\\debug.keystore')
             storePassword 'android'
             keyAlias = 'androiddebugkey'
             keyPassword 'android'
