@@ -14,6 +14,9 @@ public class Constants {
     public static final String STRING = "java.lang.String";
     //Activity的全类名
     public static final String ACTIVITY = "android.app.Activity";
+    // RouterManager类名
+    public static final String ROUTER_MANAGER = "ARouterManager";
+
     //包名前缀封装
     public static final String BASE_PACKAGE = "com.example.componentizationdemo.api";
     //路由组Group加载接口
@@ -22,6 +25,8 @@ public class Constants {
     public static final String AROUTE_Path = BASE_PACKAGE + ".core.ARouterLoadPath";
     // 获取参数，加载接口
     public static final String PARAMETER_LOAD = BASE_PACKAGE + ".core.ParameterLoad";
+    //跨模块业务，回调接口
+    public static final String CALL = BASE_PACKAGE + ".core.Call";
 
     //路由组Group对应得详细Path,方法名
     public static final String PATH_METHOD_NAME = "loadPath";

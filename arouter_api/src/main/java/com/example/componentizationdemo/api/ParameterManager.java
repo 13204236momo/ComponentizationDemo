@@ -1,9 +1,11 @@
-package com.example.componentizationdemo.api.core;
+package com.example.componentizationdemo.api;
 
 import android.app.Activity;
 import android.util.LruCache;
 
 import androidx.annotation.NonNull;
+
+import com.example.componentizationdemo.api.core.ParameterLoad;
 
 /**
  * 参数parameter加载管理器

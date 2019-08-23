@@ -1,13 +1,13 @@
 package com.example.componentizationdemo.annotation.model;
 
 import javax.lang.model.element.Element;
-import javax.lang.model.util.Elements;
 
 public class RouterBean {
 
 
     public enum Type {
-        ACTIVITY
+        ACTIVITY,
+        CALL  //跨模块的业务接口
     }
 
     //枚举类型

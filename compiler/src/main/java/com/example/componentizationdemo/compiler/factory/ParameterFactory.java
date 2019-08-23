@@ -6,12 +6,15 @@ import com.example.componentizationdemo.compiler.utils.EmptyUtils;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.ParameterSpec;
+import com.squareup.javapoet.TypeName;
 
 import javax.annotation.processing.Messager;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.Elements;
+import javax.lang.model.util.Types;
 import javax.tools.Diagnostic;
 
 public class ParameterFactory {
@@ -19,10 +22,15 @@ public class ParameterFactory {
     private static final String CONTENT = "$T t = ($T)target";
 
     // 方法体构建
-    private MethodSpec.Builder methodBuidler;
+    private MethodSpec.Builder methodBuilder;
 
     // Messager用来报告错误，警告和其他提示信息
     private Messager messager;
+
+    //type(信息类)工具类，包含用于操作TypeMirror的工具方法
+    private Types typesUtils;
+    // 获取元素接口信息（生成类文件需要的接口实现类）
+    private TypeMirror callMirror;
 
     // 类名，如：MainActivity
     private ClassName className;
@@ -30,12 +38,15 @@ public class ParameterFactory {
     private ParameterFactory(Builder builder) {
         this.messager = builder.messager;
         this.className = builder.className;
-
+        this.typesUtils = builder.typesUtils;
         // 通过方法参数体构建方法体：public void loadParameter(Object target) {
-        methodBuidler = MethodSpec.methodBuilder(Constants.PARAMETER_METHOD_NAME)
+        methodBuilder = MethodSpec.methodBuilder(Constants.PARAMETER_METHOD_NAME)
                 .addAnnotation(Override.class)
                 .addModifiers(Modifier.PUBLIC)
                 .addParameter(builder.parameterSpec);
+        this.callMirror = builder.elementsUtils
+                .getTypeElement(Constants.CALL)
+                .asType();
     }
 
     /**
@@ -43,11 +54,11 @@ public class ParameterFactory {
      */
     public void addFirstStatement() {
         // 方法内容：MainActivity t = (MainActivity) target;
-        methodBuidler.addStatement(CONTENT, className, className);
+        methodBuilder.addStatement(CONTENT, className, className);
     }
 
     public MethodSpec build() {
-        return methodBuidler.build();
+        return methodBuilder.build();
     }
 
     /**
@@ -82,13 +93,22 @@ public class ParameterFactory {
             // t.s = t.getIntent.getStringExtra("s");
             if (typeMirror.toString().equalsIgnoreCase(Constants.STRING)) {
                 methodContent += "getStringExtra($S)";
+            }else if (typesUtils.isSubtype(typeMirror, callMirror)) {
+                // t.iUser = (IUserImpl) RouterManager.getInstance().build("/order/getUserInfo").navigation(t);
+                methodContent = "t." + fieldName + " = ($T) $T.getInstance().build($S).navigation(t)";
+                methodBuilder.addStatement(methodContent,
+                        TypeName.get(typeMirror),
+                        ClassName.get(Constants.BASE_PACKAGE, Constants.ROUTER_MANAGER),
+                        annotationValue);
+                return;
             }
+
         }
 
         // 健壮代码
         if (methodContent.endsWith(")")) {
             // 添加最终拼接方法内容语句
-            methodBuidler.addStatement(methodContent, annotationValue);
+            methodBuilder.addStatement(methodContent, annotationValue);
         } else {
             messager.printMessage(Diagnostic.Kind.ERROR, "目前暂支持String、int、boolean传参");
         }
@@ -105,12 +125,27 @@ public class ParameterFactory {
         // 方法参数体
         private ParameterSpec parameterSpec;
 
+        //操作Element工具类（类，函数，属性都是Element）
+        private Elements elementsUtils;
+
+        private Types typesUtils;
+
         public Builder(ParameterSpec parameterSpec) {
             this.parameterSpec = parameterSpec;
         }
 
         public Builder setMessager(Messager messager) {
             this.messager = messager;
+            return this;
+        }
+
+        public Builder setElementsUtils(Elements elementsUtils) {
+            this.elementsUtils = elementsUtils;
+            return this;
+        }
+
+        public Builder setTypesUtils(Types typesUtils) {
+            this.typesUtils = typesUtils;
             return this;
         }
 

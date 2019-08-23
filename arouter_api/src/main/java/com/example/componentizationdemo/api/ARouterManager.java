@@ -1,9 +1,14 @@
-package com.example.componentizationdemo.api.core;
+package com.example.componentizationdemo.api;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.text.TextUtils;
-import android.util.Log;
 import android.util.LruCache;
+
+import com.example.componentizationdemo.annotation.model.RouterBean;
+import com.example.componentizationdemo.api.core.ARouterLoadGroup;
+import com.example.componentizationdemo.api.core.ARouterLoadPath;
 
 public class ARouterManager {
     private static ARouterManager instance;
@@ -72,7 +77,7 @@ public class ARouterManager {
      */
     public Object navigation(Context context, BundleManger bundleManger, int code) {
         String groupClassName = context.getPackageName() + ".apt." + GROUP_FILE_PREFIX + group;
-        Log.e("zhouzhou", groupClassName);
+        //Log.e("zhouzhou", groupClassName);
 
         //读取路由组group类文件（懒加载）
         ARouterLoadGroup groupLoad = groupLruCache.get(group);
@@ -84,7 +89,7 @@ public class ARouterManager {
                 groupLruCache.put(group, groupLoad);
             }
             if (groupLoad.loadGroup().isEmpty()){
-                throw new IllegalArgumentException("路由表加载失败");
+                throw new IllegalArgumentException("路由表Group加载失败");
             }
 
             //读取路由表path路径类文件缓存
@@ -95,14 +100,40 @@ public class ARouterManager {
                 if (aClass != null){
                     pathLoad = aClass.newInstance();
                 }
-               if (pathLoad != null)pathLruCache.put(group,pathLoad);
+               if (pathLoad != null)pathLruCache.put(path,pathLoad);
+            }
+            if (pathLoad!=null){
+                if (pathLoad.loadPath().isEmpty()){
+                    throw new RuntimeException("路由表path加载失败！");
+                }
+                RouterBean bean = pathLoad.loadPath().get(path);
+                if (bean!=null){
+                    //类型判断，方便拓展
+                    switch (bean.getType()){
+                        case ACTIVITY:
+                            Intent intent = new Intent(context,bean.getClazz());
+                            intent.putExtras(bundleManger.getBundle());
 
+                            if (bundleManger.isResult()){
+                                ((Activity) context).setResult(code,intent);
+                                ((Activity) context).finish();
+                            }
+                            if (code>0){ //跳转的时候需要回调
+                                ((Activity) context).startActivityForResult(intent,code,bundleManger.getBundle());
+                            }else {
+                                context.startActivity(intent,bundleManger.getBundle());
+                            }
+                            break;
+                        case CALL:
+                            //返回接口的实现类
+                            return bean.getClazz().newInstance();
+                    }
+                }
             }
 
         } catch (Exception e) {
             e.printStackTrace();
         }
-
         return null;
     }
 }

@@ -1,4 +1,4 @@
-package com.example.componentizationdemo.api.core;
+package com.example.componentizationdemo.api;
 
 import android.content.Context;
 import android.os.Bundle;

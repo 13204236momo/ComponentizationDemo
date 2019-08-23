@@ -108,6 +108,8 @@ public class PatameterProcessor extends AbstractProcessor {
             // 方法体内容构建
             ParameterFactory factory = new ParameterFactory.Builder(parameterSpec)
                     .setMessager(messager)
+                    .setElementsUtils(elementsUtils)
+                    .setTypesUtils(typesUtils)
                     .setClassName(className)
                     .build();
 
